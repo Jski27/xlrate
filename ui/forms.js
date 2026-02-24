@@ -88,7 +88,7 @@ export function renderTasks() {
     return `
       <li>
         <span class="item-label">${esc(t.name)}</span>
-        <span class="item-detail">${t.durationMins}m · P${t.priority}${deadline}${energy}</span>
+        <span class="item-detail">${formatDuration(t.durationMins)} · P${t.priority}${deadline}${energy}</span>
         <button class="btn-edit"   data-type="task" data-index="${i}" title="Edit">✏</button>
         <button class="btn-remove" data-type="task" data-index="${i}" title="Remove">✕</button>
       </li>
@@ -129,6 +129,28 @@ export function addBlock() {
   document.getElementById('block-name').focus();
 }
 
+// ── Duration helpers ────────────────────────────────────────────────────────────
+
+function parseDuration(str) {
+  str = str.trim().toLowerCase();
+  if (!str) return NaN;
+  if (/^\d+$/.test(str)) return parseInt(str);                        // "30" → 30 mins
+  const hm = str.match(/^(\d+(?:\.\d+)?)\s*h(?:r?s?)?\s*(?:(\d+)\s*m?)?$/);
+  if (hm) return Math.round(parseFloat(hm[1]) * 60 + parseInt(hm[2] || 0)); // "1h30m", "1.5h"
+  const m = str.match(/^(\d+(?:\.\d+)?)\s*m(?:in)?s?$/);
+  if (m) return Math.round(parseFloat(m[1]));                         // "90m", "45min"
+  const colon = str.match(/^(\d+):(\d{2})$/);
+  if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);    // "1:30"
+  return NaN;
+}
+
+function formatDuration(mins) {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 // ── Add task ───────────────────────────────────────────────────────────────────
 
 export function addTask() {
@@ -141,8 +163,9 @@ export function addTask() {
   if (!name)        return showError('task-name',     'Task name is required.');
   if (!durationRaw) return showError('task-duration', 'Duration is required.');
 
-  const durationMins = parseInt(durationRaw);
-  if (durationMins <= 0) return showError('task-duration', 'Duration must be positive.');
+  const durationMins = parseDuration(durationRaw);
+  if (isNaN(durationMins) || durationMins <= 0)
+    return showError('task-duration', 'Enter a duration like 30m, 1h, or 1.5h');
 
   state.tasks.push({ name, durationMins, priority, deadline, energy });
   renderTasks();
@@ -223,11 +246,11 @@ export function startEditTask(index) {
 
   li.classList.add('editing');
   li.innerHTML = `
-    <input  class="edit-input" type="text"   data-field="name"     value="${esc(t.name)}">
-    <input  class="edit-input" type="number" data-field="duration" value="${t.durationMins}" placeholder="mins">
-    <select class="edit-input"               data-field="priority">${priorityOpts}</select>
-    <input  class="edit-input" type="date"   data-field="deadline" value="${t.deadline || ''}">
-    <select class="edit-input"               data-field="energy">${energyOpts}</select>
+    <input  class="edit-input" type="text" data-field="name"     value="${esc(t.name)}">
+    <input  class="edit-input" type="text" data-field="duration" value="${formatDuration(t.durationMins)}" placeholder="e.g. 30m, 1h">
+    <select class="edit-input"             data-field="priority">${priorityOpts}</select>
+    <input  class="edit-input" type="date" data-field="deadline" value="${t.deadline || ''}">
+    <select class="edit-input"             data-field="energy">${energyOpts}</select>
     <div class="edit-btns">
       <button class="btn-save-edit">Save</button>
       <button class="btn-cancel-edit">Cancel</button>
@@ -254,8 +277,8 @@ function saveEditTask(index, li) {
     li.querySelector('[data-field="name"]').style.borderColor = 'var(--danger)';
     return;
   }
-  const durationMins = parseInt(durationRaw);
-  if (!durationMins || durationMins <= 0) {
+  const durationMins = parseDuration(durationRaw);
+  if (isNaN(durationMins) || durationMins <= 0) {
     li.querySelector('[data-field="duration"]').style.borderColor = 'var(--danger)';
     return;
   }

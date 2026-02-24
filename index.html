@@ -66,23 +66,33 @@
       <section class="card">
         <h2>Tasks</h2>
         <div class="add-form tasks-form">
-          <input type="text"   id="task-name"     placeholder="Task name">
-          <input type="number" id="task-duration" placeholder="Mins" min="1">
-          <select id="task-priority">
-            <option value="5">P5 — Critical</option>
-            <option value="4">P4 — High</option>
-            <option value="3" selected>P3 — Medium</option>
-            <option value="2">P2 — Low</option>
-            <option value="1">P1 — Optional</option>
-          </select>
-          <input type="date"   id="task-deadline" title="Deadline (optional)">
-          <select id="task-energy">
-            <option value="">Energy</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <button id="add-task-btn">+ Add Task</button>
+          <div class="task-row-primary">
+            <input type="text" id="task-name"     placeholder="Task name">
+            <input type="text" id="task-duration" placeholder="e.g. 30m, 1h, 1.5h">
+            <button id="add-task-btn">+ Add</button>
+          </div>
+          <div class="task-row-details">
+            <label>Priority
+              <select id="task-priority">
+                <option value="5">P5 — Critical</option>
+                <option value="4">P4 — High</option>
+                <option value="3" selected>P3 — Medium</option>
+                <option value="2">P2 — Low</option>
+                <option value="1">P1 — Optional</option>
+              </select>
+            </label>
+            <label>Deadline
+              <input type="date" id="task-deadline">
+            </label>
+            <label>Energy
+              <select id="task-energy">
+                <option value="">—</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </label>
+          </div>
         </div>
         <ul id="tasks-list"></ul>
       </section>

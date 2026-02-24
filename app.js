@@ -42,8 +42,9 @@ document.getElementById('add-task-btn').addEventListener('click', addTask);
 document.getElementById('generate-btn').addEventListener('click', generate);
 document.getElementById('demo-btn').addEventListener('click', loadDemo);
 
-document.getElementById('block-name').addEventListener('keydown', e => { if (e.key === 'Enter') addBlock(); });
-document.getElementById('task-name').addEventListener('keydown',  e => { if (e.key === 'Enter') addTask();  });
+document.getElementById('block-name').addEventListener('keydown',    e => { if (e.key === 'Enter') addBlock(); });
+document.getElementById('task-name').addEventListener('keydown',     e => { if (e.key === 'Enter') addTask();  });
+document.getElementById('task-duration').addEventListener('keydown', e => { if (e.key === 'Enter') addTask();  });
 
 // Edit + remove via event delegation
 document.addEventListener('click', e => {

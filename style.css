@@ -193,6 +193,31 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 .add-form input[type="date"]   { width: 138px; }
 .add-form select               { width: 112px; }
 
+/* Two-row task form */
+.tasks-form {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.task-row-primary {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.task-row-primary #task-name     { flex: 1; min-width: 120px; }
+.task-row-primary #task-duration { width: 130px; flex: none; }
+
+.task-row-details {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.task-row-details label         { flex-shrink: 0; }
+.task-row-details select        { width: 118px; }
+.task-row-details input[type="date"] { width: 138px; }
+
 /* ── Lists ─────────────────────────────────────────────────────────────────── */
 ul {
   list-style: none;
