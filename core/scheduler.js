@@ -22,12 +22,18 @@ function deadlineUrgency(task, dateStr) {
  * Sort tasks:
  *   1. Deadline urgency (sooner first; no deadline = last)
  *   2. Priority (5 = highest → goes first)
- *   3. Duration (shorter first as tiebreaker)
+ *   3. Energy (high → medium → low, so high-energy tasks land in earlier windows)
+ *   4. Duration (shorter first as tiebreaker)
  *
- * @param {{ name: string, durationMins: number, priority?: number, deadline?: string }[]} tasks
+ * @param {{ name: string, durationMins: number, priority?: number, deadline?: string, energy?: string }[]} tasks
  * @param {string} dateStr - ISO date string for the plan day (YYYY-MM-DD)
  * @returns same array, sorted (does not mutate original)
  */
+function energyRank(task) {
+  const ranks = { high: 0, medium: 1, low: 2 };
+  return ranks[task.energy] ?? 1; // default to medium
+}
+
 export function sortTasks(tasks, dateStr) {
   return [...tasks].sort((a, b) => {
     const ua = deadlineUrgency(a, dateStr);
@@ -37,6 +43,10 @@ export function sortTasks(tasks, dateStr) {
     const pa = a.priority ?? 1;
     const pb = b.priority ?? 1;
     if (pa !== pb) return pb - pa;
+
+    const ea = energyRank(a);
+    const eb = energyRank(b);
+    if (ea !== eb) return ea - eb;
 
     return a.durationMins - b.durationMins;
   });

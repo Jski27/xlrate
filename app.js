@@ -4,6 +4,37 @@ import { generatePlan } from './core/engine.js';
 let blocks = [];
 let tasks  = [];
 
+const STORAGE_KEY = 'xlrate_state';
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    blocks,
+    tasks,
+    config: {
+      workStart: document.getElementById('work-start').value,
+      workEnd:   document.getElementById('work-end').value,
+      bufferPct: document.getElementById('buffer-pct').value,
+    },
+  }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const { blocks: b, tasks: t, config: c } = JSON.parse(raw);
+    if (b) { blocks = b; }
+    if (t) { tasks  = t; }
+    if (c) {
+      if (c.workStart) document.getElementById('work-start').value = c.workStart;
+      if (c.workEnd)   document.getElementById('work-end').value   = c.workEnd;
+      if (c.bufferPct !== undefined) document.getElementById('buffer-pct').value = c.bufferPct;
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
 // ── Render helpers ─────────────────────────────────────────────────────────────
 function renderBlocks() {
   const list = document.getElementById('blocks-list');
@@ -51,6 +82,7 @@ function addBlock() {
 
   blocks.push({ name, start, end });
   renderBlocks();
+  saveState();
   document.getElementById('block-name').value = '';
 }
 
@@ -70,6 +102,7 @@ function addTask() {
 
   tasks.push({ name, durationMins, priority, deadline, energy });
   renderTasks();
+  saveState();
   document.getElementById('task-name').value     = '';
   document.getElementById('task-duration').value = '';
   document.getElementById('task-deadline').value = '';
@@ -88,6 +121,7 @@ document.addEventListener('click', e => {
     tasks.splice(index, 1);
     renderTasks();
   }
+  saveState();
 });
 
 // ── Generate ───────────────────────────────────────────────────────────────────
@@ -173,6 +207,7 @@ function loadDemo() {
     { name: 'Sleep',        start: '23:00', end: '08:00' },
   ];
   renderBlocks();
+  saveState();
 
   tasks = [
     { name: 'Problem set 3',         durationMins: 120, priority: 5, deadline: today(),     energy: 'high'   },
@@ -184,6 +219,7 @@ function loadDemo() {
     { name: 'Practice problems',     durationMins:  75, priority: 2,                        energy: 'medium' },
   ];
   renderTasks();
+  saveState();
 }
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
@@ -216,7 +252,13 @@ document.getElementById('demo-btn').addEventListener('click', loadDemo);
 document.getElementById('block-name').addEventListener('keydown', e => { if (e.key === 'Enter') addBlock(); });
 document.getElementById('task-name').addEventListener('keydown',  e => { if (e.key === 'Enter') addTask();  });
 
+// Save config whenever it changes
+['work-start', 'work-end', 'buffer-pct'].forEach(id => {
+  document.getElementById(id).addEventListener('change', saveState);
+});
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 document.getElementById('plan-date').value = today();
+loadState();
 renderBlocks();
 renderTasks();

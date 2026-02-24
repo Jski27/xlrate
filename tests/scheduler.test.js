@@ -35,6 +35,15 @@ test('sortTasks: higher priority comes first (no deadline)', () => {
   assert.equal(sorted[0].name, 'High');
 });
 
+test('sortTasks: high energy sorts before low energy (same priority, no deadline)', () => {
+  const tasks = [
+    { name: 'Low energy',  durationMins: 30, priority: 3, energy: 'low'  },
+    { name: 'High energy', durationMins: 30, priority: 3, energy: 'high' },
+  ];
+  const sorted = sortTasks(tasks, TODAY);
+  assert.equal(sorted[0].name, 'High energy');
+});
+
 test('sortTasks: same deadline + same priority → shorter duration first', () => {
   const tasks = [
     { name: 'Long',  durationMins: 90, priority: 3, deadline: '2026-02-27' },
