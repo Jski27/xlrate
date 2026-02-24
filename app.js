@@ -29,7 +29,7 @@ function generate() {
 
   try {
     const result = generatePlan(date, { workStart, workEnd, bufferPct }, blocksForDate, state.tasks);
-    renderOutput(result);
+    renderOutput(result, blocksForDate, { workStart, workEnd });
   } catch (err) {
     alert('Error generating plan: ' + err.message);
   }

@@ -97,16 +97,17 @@
 
     <!-- OUTPUT -->
     <section id="output" class="hidden">
-      <div class="output-grid">
+      <div class="cal-layout">
 
-        <div class="card">
-          <h2>Available Windows</h2>
-          <div id="out-windows"></div>
-        </div>
-
-        <div class="card">
-          <h2>Proposed Schedule</h2>
-          <div id="out-schedule"></div>
+        <div class="card cal-card">
+          <div class="cal-header">
+            <h2>Daily Calendar</h2>
+            <div class="cal-legend">
+              <span class="legend-dot legend-dot--block"></span><span class="legend-label">Non-negotiable</span>
+              <span class="legend-dot legend-dot--task"></span><span class="legend-label">Scheduled task</span>
+            </div>
+          </div>
+          <div id="out-calendar"></div>
         </div>
 
         <div class="card">

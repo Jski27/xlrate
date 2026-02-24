@@ -419,56 +419,148 @@ button:active { transform: scale(0.97); }
   to   { opacity: 1; transform: translateY(0);   }
 }
 
-.output-grid {
+/* Two-column layout: calendar (left) + spillover (right) */
+.cal-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr 260px;
   gap: 1.125rem;
   margin-bottom: 0.875rem;
+  align-items: start;
 }
 
-/* ── Output items ──────────────────────────────────────────────────────────── */
-.window-item, .schedule-item, .spillover-item {
+@media (max-width: 800px) {
+  .cal-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Calendar card header ──────────────────────────────────────────────────── */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cal-header h2 { margin-bottom: 0; }
+
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-dot--block { background: #E8943A; }
+.legend-dot--task  { background: var(--accent); }
+.legend-label      { margin-right: 0.5rem; }
+
+/* ── Calendar timeline ─────────────────────────────────────────────────────── */
+.cal-wrap {
+  overflow-y: auto;
+  max-height: 640px;
+  padding-bottom: 0.5rem;
+}
+
+.cal-inner {
+  position: relative;
+  margin-left: 52px;
+  border-left: 1px solid var(--border);
+}
+
+.cal-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px solid var(--border-subtle);
+  pointer-events: none;
+}
+
+.cal-hour-label {
+  position: absolute;
+  left: -52px;
+  width: 46px;
+  top: -8px;
+  text-align: right;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.67rem;
+  color: var(--text-subtle);
+  user-select: none;
+}
+
+/* ── Calendar events ───────────────────────────────────────────────────────── */
+.cal-event {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: default;
+  transition: filter 0.12s;
+}
+
+.cal-event:hover { filter: brightness(1.12); }
+
+.cal-event--block {
+  background: rgba(232, 148, 58, 0.12);
+  border-left: 3px solid #E8943A;
+}
+
+.cal-event--task {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+}
+
+.cal-event-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.cal-event-time {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Spillover items ───────────────────────────────────────────────────────── */
+.spillover-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--border-subtle);
   font-size: 0.875rem;
-}
-
-.window-item:last-child,
-.schedule-item:last-child,
-.spillover-item:last-child { border-bottom: none; }
-
-/* Schedule items — accent left border */
-.schedule-item {
-  padding-left: 0.75rem;
-  border-left: 2px solid var(--accent);
-  margin-left: 2px;
-  border-radius: 0 2px 2px 0;
-}
-
-/* Spillover items — danger left border */
-.spillover-item {
   padding-left: 0.75rem;
   border-left: 2px solid var(--danger);
   margin-left: 2px;
   border-radius: 0 2px 2px 0;
 }
 
-.time {
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
-  font-size: 0.76rem;
-  color: var(--accent);
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 0.02em;
-}
+.spillover-item:last-child { border-bottom: none; }
 
 .task-name { flex: 1; font-weight: 500; color: var(--text); }
 .duration  { font-size: 0.73rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 
-.window-item   .duration  { color: var(--success); }
 .spillover-item .task-name { color: var(--danger); }
 
 p.empty {
