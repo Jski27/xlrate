@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xlrate — Daily Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>xlrate</h1>
+    <p>Execution OS — Daily Planner</p>
+  </header>
+
+  <main>
+
+    <!-- CONFIG -->
+    <section class="card">
+      <h2>Configuration</h2>
+      <div class="config-grid">
+        <label>
+          Date
+          <input type="date" id="plan-date">
+        </label>
+        <label>
+          Work Start
+          <input type="time" id="work-start" value="08:00">
+        </label>
+        <label>
+          Work End
+          <input type="time" id="work-end" value="22:00">
+        </label>
+        <label>
+          Buffer %
+          <input type="number" id="buffer-pct" value="20" min="0" max="100">
+        </label>
+      </div>
+    </section>
+
+    <!-- INPUT COLUMNS -->
+    <div class="input-columns">
+
+      <!-- BLOCKS -->
+      <section class="card">
+        <h2>Non-Negotiable Blocks</h2>
+        <div class="add-form">
+          <input type="text"   id="block-name"  placeholder="Name (e.g. Math Class)">
+          <input type="time"   id="block-start" value="09:00">
+          <input type="time"   id="block-end"   value="10:30">
+          <button id="add-block-btn">+ Add Block</button>
+        </div>
+        <ul id="blocks-list"></ul>
+      </section>
+
+      <!-- TASKS -->
+      <section class="card">
+        <h2>Tasks</h2>
+        <div class="add-form tasks-form">
+          <input type="text"   id="task-name"     placeholder="Task name">
+          <input type="number" id="task-duration" placeholder="Mins" min="1">
+          <select id="task-priority">
+            <option value="5">P5 — Critical</option>
+            <option value="4">P4 — High</option>
+            <option value="3" selected>P3 — Medium</option>
+            <option value="2">P2 — Low</option>
+            <option value="1">P1 — Optional</option>
+          </select>
+          <input type="date"   id="task-deadline" title="Deadline (optional)">
+          <select id="task-energy">
+            <option value="">Energy</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <button id="add-task-btn">+ Add Task</button>
+        </div>
+        <ul id="tasks-list"></ul>
+      </section>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+      <button class="btn-secondary" id="demo-btn">Load Demo Data</button>
+      <button class="btn-primary"   id="generate-btn">Generate Schedule</button>
+    </div>
+
+    <!-- OUTPUT -->
+    <section id="output" class="hidden">
+      <div class="output-grid">
+
+        <div class="card">
+          <h2>Available Windows</h2>
+          <div id="out-windows"></div>
+        </div>
+
+        <div class="card">
+          <h2>Proposed Schedule</h2>
+          <div id="out-schedule"></div>
+        </div>
+
+        <div class="card">
+          <h2>Spillover</h2>
+          <div id="out-spillover"></div>
+        </div>
+
+      </div>
+      <div class="meta-bar" id="out-meta"></div>
+    </section>
+
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
