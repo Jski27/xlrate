@@ -1,11 +1,57 @@
 /**
  * forms.js
- * Rendering the block/task lists and handling the add-item forms.
- * Inline editing (v2 phase 5) will be added here.
+ * Rendering block/task lists, add forms, inline editing, and recurring logic.
  */
 
 import { state, saveState } from './state.js';
 import { esc, showError, today, tomorrow } from './utils.js';
+
+// ── Recurrence helpers ─────────────────────────────────────────────────────────
+
+const RECUR_LABELS = {
+  daily:    'Daily',
+  weekdays: 'Weekdays',
+  weekends: 'Weekends',
+  mwf:      'MWF',
+  tth:      'TTh',
+  weekly:   'Weekly',
+};
+
+function recurringSelectHTML(current = 'none') {
+  return [
+    ['none',     'Once'],
+    ['daily',    'Daily'],
+    ['weekdays', 'Weekdays'],
+    ['weekends', 'Weekends'],
+    ['mwf',      'MWF'],
+    ['tth',      'TTh'],
+    ['weekly',   'Weekly'],
+  ].map(([v, l]) =>
+    `<option value="${v}"${v === current ? ' selected' : ''}>${l}</option>`
+  ).join('');
+}
+
+/**
+ * Filters blocks to only those relevant for the given date.
+ * Non-recurring blocks always pass through.
+ */
+export function getBlocksForDate(blocks, dateStr) {
+  const day       = new Date(dateStr + 'T12:00:00').getDay(); // 0=Sun … 6=Sat
+  const isWeekday = day >= 1 && day <= 5;
+  const isWeekend = day === 0 || day === 6;
+
+  return blocks.filter(b => {
+    const r = b.recurring;
+    if (!r || r === 'none') return true;
+    if (r === 'daily')      return true;
+    if (r === 'weekdays')   return isWeekday;
+    if (r === 'weekends')   return isWeekend;
+    if (r === 'mwf')        return [1, 3, 5].includes(day);
+    if (r === 'tth')        return [2, 4].includes(day);
+    if (r === 'weekly')     return b.weeklyDay === day;
+    return true;
+  });
+}
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 
@@ -15,13 +61,19 @@ export function renderBlocks() {
     list.innerHTML = '<li class="empty">No blocks added yet.</li>';
     return;
   }
-  list.innerHTML = state.blocks.map((b, i) => `
-    <li>
-      <span class="item-label">${esc(b.name)}</span>
-      <span class="item-detail">${b.start} – ${b.end}</span>
-      <button class="btn-remove" data-type="block" data-index="${i}" title="Remove">✕</button>
-    </li>
-  `).join('');
+  list.innerHTML = state.blocks.map((b, i) => {
+    const label = b.recurring && b.recurring !== 'none' ? RECUR_LABELS[b.recurring] : null;
+    const badge = label ? `<span class="recur-badge">${label}</span>` : '';
+    return `
+      <li>
+        <span class="item-label">${esc(b.name)}</span>
+        <span class="item-detail">${b.start} – ${b.end}</span>
+        ${badge}
+        <button class="btn-edit"   data-type="block" data-index="${i}" title="Edit">✏</button>
+        <button class="btn-remove" data-type="block" data-index="${i}" title="Remove">✕</button>
+      </li>
+    `;
+  }).join('');
 }
 
 export function renderTasks() {
@@ -37,28 +89,47 @@ export function renderTasks() {
       <li>
         <span class="item-label">${esc(t.name)}</span>
         <span class="item-detail">${t.durationMins}m · P${t.priority}${deadline}${energy}</span>
+        <button class="btn-edit"   data-type="task" data-index="${i}" title="Edit">✏</button>
         <button class="btn-remove" data-type="task" data-index="${i}" title="Remove">✕</button>
       </li>
     `;
   }).join('');
 }
 
-// ── Add ────────────────────────────────────────────────────────────────────────
+// ── Add block ──────────────────────────────────────────────────────────────────
 
 export function addBlock() {
-  const name  = document.getElementById('block-name').value.trim();
-  const start = document.getElementById('block-start').value;
-  const end   = document.getElementById('block-end').value;
+  const name      = document.getElementById('block-name').value.trim();
+  const start     = document.getElementById('block-start').value;
+  const end       = document.getElementById('block-end').value;
+  const recurring = document.getElementById('block-recurring').value;
 
   if (!name)          return showError('block-name', 'Block name is required.');
   if (!start || !end) return alert('Please set start and end times.');
   if (start >= end)   return alert('Start time must be before end time.');
 
-  state.blocks.push({ name, start, end });
+  const block = { name, start, end };
+  if (recurring !== 'none') {
+    block.recurring = recurring;
+    if (recurring === 'weekly') {
+      const dateStr = document.getElementById('plan-date').value || today();
+      block.weeklyDay = new Date(dateStr + 'T12:00:00').getDay();
+    }
+  }
+
+  state.blocks.push(block);
   renderBlocks();
+  flashLastItem('blocks-list');
   saveState();
-  document.getElementById('block-name').value = '';
+
+  // UX: reset name, advance start to this block's end, re-focus
+  document.getElementById('block-name').value      = '';
+  document.getElementById('block-start').value     = end;
+  document.getElementById('block-recurring').value = 'none';
+  document.getElementById('block-name').focus();
 }
+
+// ── Add task ───────────────────────────────────────────────────────────────────
 
 export function addTask() {
   const name        = document.getElementById('task-name').value.trim();
@@ -75,14 +146,126 @@ export function addTask() {
 
   state.tasks.push({ name, durationMins, priority, deadline, energy });
   renderTasks();
+  flashLastItem('tasks-list');
   saveState();
+
   document.getElementById('task-name').value     = '';
   document.getElementById('task-duration').value = '';
   document.getElementById('task-deadline').value = '';
   document.getElementById('task-energy').value   = '';
+  document.getElementById('task-name').focus();
 }
 
-// ── Demo ───────────────────────────────────────────────────────────────────────
+// ── Inline edit: blocks ────────────────────────────────────────────────────────
+
+export function startEditBlock(index) {
+  const b  = state.blocks[index];
+  const li = document.getElementById('blocks-list').children[index];
+
+  li.classList.add('editing');
+  li.innerHTML = `
+    <input  class="edit-input" type="text" data-field="name"      value="${esc(b.name)}">
+    <input  class="edit-input" type="time" data-field="start"     value="${b.start}">
+    <input  class="edit-input" type="time" data-field="end"       value="${b.end}">
+    <select class="edit-input"             data-field="recurring">${recurringSelectHTML(b.recurring || 'none')}</select>
+    <div class="edit-btns">
+      <button class="btn-save-edit">Save</button>
+      <button class="btn-cancel-edit">Cancel</button>
+    </div>
+  `;
+
+  li.querySelector('[data-field="name"]').focus();
+  li.querySelector('.btn-save-edit').addEventListener('click',  () => saveEditBlock(index, li));
+  li.querySelector('.btn-cancel-edit').addEventListener('click', () => renderBlocks());
+  li.querySelector('[data-field="name"]').addEventListener('keydown', e => {
+    if (e.key === 'Enter')  saveEditBlock(index, li);
+    if (e.key === 'Escape') renderBlocks();
+  });
+}
+
+function saveEditBlock(index, li) {
+  const name      = li.querySelector('[data-field="name"]').value.trim();
+  const start     = li.querySelector('[data-field="start"]').value;
+  const end       = li.querySelector('[data-field="end"]').value;
+  const recurring = li.querySelector('[data-field="recurring"]').value;
+
+  if (!name)      { li.querySelector('[data-field="name"]').style.borderColor = 'var(--danger)'; return; }
+  if (start >= end) { li.querySelector('[data-field="end"]').style.borderColor  = 'var(--danger)'; return; }
+
+  const block = { name, start, end };
+  if (recurring !== 'none') {
+    block.recurring = recurring;
+    if (recurring === 'weekly') {
+      // Preserve the original weeklyDay; fall back to plan date if new
+      block.weeklyDay = state.blocks[index].weeklyDay
+        ?? new Date((document.getElementById('plan-date').value || today()) + 'T12:00:00').getDay();
+    }
+  }
+
+  state.blocks[index] = block;
+  saveState();
+  renderBlocks();
+}
+
+// ── Inline edit: tasks ─────────────────────────────────────────────────────────
+
+export function startEditTask(index) {
+  const t  = state.tasks[index];
+  const li = document.getElementById('tasks-list').children[index];
+
+  const priorityOpts = [5, 4, 3, 2, 1].map(v =>
+    `<option value="${v}"${t.priority === v ? ' selected' : ''}>P${v}</option>`
+  ).join('');
+
+  const energyOpts = [['', '—'], ['high', 'High'], ['medium', 'Med'], ['low', 'Low']].map(([v, l]) =>
+    `<option value="${v}"${(t.energy || '') === v ? ' selected' : ''}>${l}</option>`
+  ).join('');
+
+  li.classList.add('editing');
+  li.innerHTML = `
+    <input  class="edit-input" type="text"   data-field="name"     value="${esc(t.name)}">
+    <input  class="edit-input" type="number" data-field="duration" value="${t.durationMins}" placeholder="mins">
+    <select class="edit-input"               data-field="priority">${priorityOpts}</select>
+    <input  class="edit-input" type="date"   data-field="deadline" value="${t.deadline || ''}">
+    <select class="edit-input"               data-field="energy">${energyOpts}</select>
+    <div class="edit-btns">
+      <button class="btn-save-edit">Save</button>
+      <button class="btn-cancel-edit">Cancel</button>
+    </div>
+  `;
+
+  li.querySelector('[data-field="name"]').focus();
+  li.querySelector('.btn-save-edit').addEventListener('click',  () => saveEditTask(index, li));
+  li.querySelector('.btn-cancel-edit').addEventListener('click', () => renderTasks());
+  li.querySelector('[data-field="name"]').addEventListener('keydown', e => {
+    if (e.key === 'Enter')  saveEditTask(index, li);
+    if (e.key === 'Escape') renderTasks();
+  });
+}
+
+function saveEditTask(index, li) {
+  const name        = li.querySelector('[data-field="name"]').value.trim();
+  const durationRaw = li.querySelector('[data-field="duration"]').value;
+  const priority    = parseInt(li.querySelector('[data-field="priority"]').value);
+  const deadline    = li.querySelector('[data-field="deadline"]').value || undefined;
+  const energy      = li.querySelector('[data-field="energy"]').value   || undefined;
+
+  if (!name) {
+    li.querySelector('[data-field="name"]').style.borderColor = 'var(--danger)';
+    return;
+  }
+  const durationMins = parseInt(durationRaw);
+  if (!durationMins || durationMins <= 0) {
+    li.querySelector('[data-field="duration"]').style.borderColor = 'var(--danger)';
+    return;
+  }
+
+  state.tasks[index] = { name, durationMins, priority, deadline, energy };
+  saveState();
+  renderTasks();
+}
+
+// ── Demo data ──────────────────────────────────────────────────────────────────
 
 export function loadDemo() {
   document.getElementById('plan-date').value  = today();
@@ -91,9 +274,9 @@ export function loadDemo() {
   document.getElementById('buffer-pct').value = '20';
 
   state.blocks = [
-    { name: 'Math Class', start: '09:00', end: '10:30' },
-    { name: 'Lunch',      start: '12:00', end: '13:00' },
-    { name: 'Gym',        start: '17:00', end: '18:00' },
+    { name: 'Math Class', start: '09:00', end: '10:30', recurring: 'mwf'      },
+    { name: 'Lunch',      start: '12:00', end: '13:00', recurring: 'weekdays' },
+    { name: 'Gym',        start: '17:00', end: '18:00', recurring: 'daily'    },
   ];
   renderBlocks();
   saveState();
@@ -109,4 +292,13 @@ export function loadDemo() {
   ];
   renderTasks();
   saveState();
+}
+
+// ── UX helpers ─────────────────────────────────────────────────────────────────
+
+function flashLastItem(listId) {
+  const last = document.getElementById(listId).lastElementChild;
+  if (!last || last.classList.contains('empty')) return;
+  last.classList.add('item-new');
+  last.addEventListener('animationend', () => last.classList.remove('item-new'), { once: true });
 }

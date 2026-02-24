@@ -6,7 +6,8 @@
 
 import { generatePlan } from './core/engine.js';
 import { state, loadState, saveState } from './ui/state.js';
-import { renderBlocks, renderTasks, addBlock, addTask, loadDemo } from './ui/forms.js';
+import { renderBlocks, renderTasks, addBlock, addTask, loadDemo,
+         startEditBlock, startEditTask, getBlocksForDate } from './ui/forms.js';
 import { renderOutput } from './ui/output.js';
 import { today } from './ui/utils.js';
 
@@ -23,8 +24,11 @@ function generate() {
   if (workStart >= workEnd)     return alert('Work start must be before work end.');
   if (state.tasks.length === 0) return alert('Add at least one task to schedule.');
 
+  // Filter blocks to only those applicable for the selected date
+  const blocksForDate = getBlocksForDate(state.blocks, date);
+
   try {
-    const result = generatePlan(date, { workStart, workEnd, bufferPct }, state.blocks, state.tasks);
+    const result = generatePlan(date, { workStart, workEnd, bufferPct }, blocksForDate, state.tasks);
     renderOutput(result);
   } catch (err) {
     alert('Error generating plan: ' + err.message);
@@ -41,19 +45,28 @@ document.getElementById('demo-btn').addEventListener('click', loadDemo);
 document.getElementById('block-name').addEventListener('keydown', e => { if (e.key === 'Enter') addBlock(); });
 document.getElementById('task-name').addEventListener('keydown',  e => { if (e.key === 'Enter') addTask();  });
 
-// Remove blocks/tasks via event delegation
+// Edit + remove via event delegation
 document.addEventListener('click', e => {
-  const btn = e.target.closest('.btn-remove');
-  if (!btn) return;
-  const index = parseInt(btn.dataset.index);
-  if (btn.dataset.type === 'block') {
-    state.blocks.splice(index, 1);
-    renderBlocks();
-  } else {
-    state.tasks.splice(index, 1);
-    renderTasks();
+  const editBtn = e.target.closest('.btn-edit');
+  if (editBtn) {
+    const index = parseInt(editBtn.dataset.index);
+    if (editBtn.dataset.type === 'block') startEditBlock(index);
+    else                                   startEditTask(index);
+    return;
   }
-  saveState();
+
+  const removeBtn = e.target.closest('.btn-remove');
+  if (removeBtn) {
+    const index = parseInt(removeBtn.dataset.index);
+    if (removeBtn.dataset.type === 'block') {
+      state.blocks.splice(index, 1);
+      renderBlocks();
+    } else {
+      state.tasks.splice(index, 1);
+      renderTasks();
+    }
+    saveState();
+  }
 });
 
 // Persist config changes

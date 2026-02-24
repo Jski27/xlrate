@@ -218,6 +218,119 @@ ul li:hover { border-color: var(--border); }
 .item-label  { font-weight: 500; flex: 1; color: var(--text); }
 .item-detail { font-size: 0.73rem; color: var(--text-muted); white-space: nowrap; }
 
+/* ── Recurrence badge ──────────────────────────────────────────────────────── */
+.recur-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Edit button (shown on hover) ──────────────────────────────────────────── */
+.btn-edit {
+  background: transparent;
+  color: var(--text-subtle);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.72rem;
+  border-radius: 4px;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: opacity 0.12s, color 0.12s, background 0.12s;
+}
+li:hover .btn-edit { opacity: 1; }
+.btn-edit:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* ── Inline edit mode ──────────────────────────────────────────────────────── */
+li.editing {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--surface);
+  border-color: var(--accent);
+  align-items: center;
+}
+
+li.editing .edit-input {
+  padding: 0.3rem 0.5rem;
+  height: 28px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+li.editing .edit-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+li.editing input[type="text"]   { flex: 1; min-width: 100px; }
+li.editing input[type="number"] { width: 65px; }
+li.editing input[type="time"]   { width: 90px; }
+li.editing input[type="date"]   { width: 130px; }
+li.editing select.edit-input    {
+  width: 100px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%237A7A96' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 1.6rem;
+}
+
+.edit-btns {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.btn-save-edit {
+  background: var(--accent);
+  color: #fff;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-save-edit:hover { background: var(--accent-hover); }
+
+.btn-cancel-edit {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-cancel-edit:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+/* ── Item added flash ──────────────────────────────────────────────────────── */
+@keyframes itemAdded {
+  0%   { background: var(--accent-dim); border-color: var(--accent); }
+  100% { background: var(--surface-raised); border-color: var(--border-subtle); }
+}
+.item-new { animation: itemAdded 0.7s ease forwards; }
+
 li.empty {
   color: var(--text-subtle);
   font-style: italic;

@@ -45,9 +45,18 @@
       <section class="card">
         <h2>Non-Negotiable Blocks</h2>
         <div class="add-form">
-          <input type="text"   id="block-name"  placeholder="Name (e.g. Math Class)">
-          <input type="time"   id="block-start" value="09:00">
-          <input type="time"   id="block-end"   value="10:30">
+          <input type="text"   id="block-name"      placeholder="Name (e.g. Math Class)">
+          <input type="time"   id="block-start"     value="09:00">
+          <input type="time"   id="block-end"       value="10:30">
+          <select              id="block-recurring">
+            <option value="none">Once</option>
+            <option value="daily">Daily</option>
+            <option value="weekdays">Weekdays</option>
+            <option value="weekends">Weekends</option>
+            <option value="mwf">MWF</option>
+            <option value="tth">TTh</option>
+            <option value="weekly">Weekly</option>
+          </select>
           <button id="add-block-btn">+ Add Block</button>
         </div>
         <ul id="blocks-list"></ul>
