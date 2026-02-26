@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/timeUtils.test.js tests/windowCalc.test.js tests/scheduler.test.js",
+    "test": "node --test tests/timeUtils.test.js tests/windowCalc.test.js tests/scheduler.test.js tests/storage.test.js",
     "dev": "npx serve . -p 3000"
   }
 }
