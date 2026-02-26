@@ -1,7 +1,15 @@
 /**
  * models.js
- * Shape definitions and lightweight validators.
+ * Lightweight validators for engine-layer input shapes.
  * Validators return an array of error strings (empty = valid).
+ *
+ * Canonical type definitions live in /domain/index.js.
+ * The engine currently uses abbreviated field names (e.g. durationMins) that
+ * pre-date the domain model; alignment is tracked separately.
+ *
+ * @see {import('../domain/index.js').PlanConfig} for the canonical config shape
+ * @see {import('../domain/index.js').NonNegotiable} for the canonical block shape
+ * @see {import('../domain/index.js').Task} for the canonical task shape
  */
 
 export function validateConfig(config) {
