@@ -54,12 +54,19 @@ body {
 header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 1.4rem 2rem;
-  text-align: center;
+  padding: 1rem 2rem;
 }
 
-header h1 {
-  font-size: 1.6rem;
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.header-brand h1 {
+  font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--text);
@@ -67,13 +74,36 @@ header h1 {
 
 .logo-accent { color: var(--accent); }
 
-header p {
+.header-brand p {
   color: var(--text-muted);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  margin-top: 0.15rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+.btn-settings {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-settings:hover,
+.btn-settings[aria-expanded="true"] {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+/* ── Config panel (hidden by default) ──────────────────────────────────────── */
+#config-panel.panel-hidden { display: none; }
 
 /* ── Layout ────────────────────────────────────────────────────────────────── */
 main {
@@ -111,6 +141,55 @@ main {
   letter-spacing: 0.1em;
   color: var(--text-muted);
   margin-bottom: 0.875rem;
+}
+
+/* ── Collapsible panels ────────────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.panel-header h2 { margin-bottom: 0; }
+
+.btn-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-subtle);
+  border: none;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-collapse:hover {
+  color: var(--text-muted);
+  background: var(--surface-raised);
+}
+
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+
+.btn-collapse.is-collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+/* Grid-based smooth collapse */
+.panel-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.22s ease;
+}
+
+.panel-body-inner { overflow: hidden; }
+
+.panel-body.panel-collapsed {
+  grid-template-rows: 0fr;
 }
 
 /* ── Config grid ───────────────────────────────────────────────────────────── */

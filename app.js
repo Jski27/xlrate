@@ -75,9 +75,83 @@ document.addEventListener('click', e => {
   document.getElementById(id).addEventListener('change', saveState);
 });
 
+// ── UI panel state (separate from data state) ──────────────────────────────────
+
+const UI_KEY = 'xlrate_ui';
+
+function loadUiState() {
+  try { return JSON.parse(localStorage.getItem(UI_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveUiState(patch) {
+  localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUiState(), ...patch }));
+}
+
+function initPanels() {
+  const ui = loadUiState();
+
+  // Settings toggle (config panel hidden by default)
+  const configPanel = document.getElementById('config-panel');
+  const settingsBtn = document.getElementById('settings-btn');
+  let settingsOpen  = ui.settingsOpen ?? false;
+
+  function applySettings() {
+    configPanel.classList.toggle('panel-hidden', !settingsOpen);
+    settingsBtn.setAttribute('aria-expanded', String(settingsOpen));
+  }
+
+  settingsBtn.addEventListener('click', () => {
+    settingsOpen = !settingsOpen;
+    applySettings();
+    saveUiState({ settingsOpen });
+  });
+
+  applySettings();
+
+  // Blocks collapse
+  const blocksBody   = document.getElementById('blocks-body');
+  const blocksToggle = document.getElementById('blocks-toggle');
+  let blocksCollapsed = ui.blocksCollapsed ?? false;
+
+  function applyBlocks() {
+    blocksBody.classList.toggle('panel-collapsed', blocksCollapsed);
+    blocksToggle.classList.toggle('is-collapsed', blocksCollapsed);
+    blocksToggle.setAttribute('aria-expanded', String(!blocksCollapsed));
+  }
+
+  blocksToggle.addEventListener('click', () => {
+    blocksCollapsed = !blocksCollapsed;
+    applyBlocks();
+    saveUiState({ blocksCollapsed });
+  });
+
+  applyBlocks();
+
+  // Tasks collapse
+  const tasksBody   = document.getElementById('tasks-body');
+  const tasksToggle = document.getElementById('tasks-toggle');
+  let tasksCollapsed = ui.tasksCollapsed ?? false;
+
+  function applyTasks() {
+    tasksBody.classList.toggle('panel-collapsed', tasksCollapsed);
+    tasksToggle.classList.toggle('is-collapsed', tasksCollapsed);
+    tasksToggle.setAttribute('aria-expanded', String(!tasksCollapsed));
+  }
+
+  tasksToggle.addEventListener('click', () => {
+    tasksCollapsed = !tasksCollapsed;
+    applyTasks();
+    saveUiState({ tasksCollapsed });
+  });
+
+  applyTasks();
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 
 document.getElementById('plan-date').value = today();
 loadState();
 renderBlocks();
 renderTasks();
+initPanels();
