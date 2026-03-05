@@ -9,14 +9,25 @@
 <body>
 
   <header>
-    <h1><span class="logo-accent">xl</span>rate</h1>
-    <p>Execution OS — Daily Planner</p>
+    <div class="header-inner">
+      <div class="header-brand">
+        <h1><span class="logo-accent">xl</span>rate</h1>
+        <p>Execution OS — Daily Planner</p>
+      </div>
+      <button id="settings-btn" class="btn-settings" aria-expanded="false">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="1.75" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.75 2.75l.85.85M9.4 9.4l.85.85M2.75 10.25l.85-.85M9.4 3.6l.85-.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Settings
+      </button>
+    </div>
   </header>
 
   <main>
 
-    <!-- CONFIG -->
-    <section class="card">
+    <!-- CONFIG (hidden by default, toggled via settings button) -->
+    <section class="card" id="config-panel">
       <h2>Configuration</h2>
       <div class="config-grid">
         <label>
@@ -43,58 +54,80 @@
 
       <!-- BLOCKS -->
       <section class="card">
-        <h2>Non-Negotiable Blocks</h2>
-        <div class="add-form">
-          <input type="text"   id="block-name"      placeholder="Name (e.g. Math Class)">
-          <input type="time"   id="block-start"     value="09:00">
-          <input type="time"   id="block-end"       value="10:30">
-          <select              id="block-recurring">
-            <option value="none">Once</option>
-            <option value="daily">Daily</option>
-            <option value="weekdays">Weekdays</option>
-            <option value="weekends">Weekends</option>
-            <option value="mwf">MWF</option>
-            <option value="tth">TTh</option>
-            <option value="weekly">Weekly</option>
-          </select>
-          <button id="add-block-btn">+ Add Block</button>
+        <div class="panel-header">
+          <h2>Non-Negotiable Blocks</h2>
+          <button class="btn-collapse" id="blocks-toggle" aria-label="Toggle blocks panel" aria-expanded="true">
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
-        <ul id="blocks-list"></ul>
+        <div class="panel-body" id="blocks-body">
+          <div class="panel-body-inner">
+            <div class="add-form">
+              <input type="text"   id="block-name"      placeholder="Name (e.g. Math Class)">
+              <input type="time"   id="block-start"     value="09:00">
+              <input type="time"   id="block-end"       value="10:30">
+              <select              id="block-recurring">
+                <option value="none">Once</option>
+                <option value="daily">Daily</option>
+                <option value="weekdays">Weekdays</option>
+                <option value="weekends">Weekends</option>
+                <option value="mwf">MWF</option>
+                <option value="tth">TTh</option>
+                <option value="weekly">Weekly</option>
+              </select>
+              <button id="add-block-btn">+ Add Block</button>
+            </div>
+            <ul id="blocks-list"></ul>
+          </div>
+        </div>
       </section>
 
       <!-- TASKS -->
       <section class="card">
-        <h2>Tasks</h2>
-        <div class="add-form tasks-form">
-          <div class="task-row-primary">
-            <input type="text" id="task-name"     placeholder="Task name">
-            <input type="text" id="task-duration" placeholder="e.g. 30m, 1h, 1.5h">
-            <button id="add-task-btn">+ Add</button>
-          </div>
-          <div class="task-row-details">
-            <label>Priority
-              <select id="task-priority">
-                <option value="5">P5 — Critical</option>
-                <option value="4">P4 — High</option>
-                <option value="3" selected>P3 — Medium</option>
-                <option value="2">P2 — Low</option>
-                <option value="1">P1 — Optional</option>
-              </select>
-            </label>
-            <label>Deadline
-              <input type="date" id="task-deadline">
-            </label>
-            <label>Energy
-              <select id="task-energy">
-                <option value="">—</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </label>
+        <div class="panel-header">
+          <h2>Tasks</h2>
+          <button class="btn-collapse" id="tasks-toggle" aria-label="Toggle tasks panel" aria-expanded="true">
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="panel-body" id="tasks-body">
+          <div class="panel-body-inner">
+            <div class="add-form tasks-form">
+              <div class="task-row-primary">
+                <input type="text" id="task-name"     placeholder="Task name">
+                <input type="text" id="task-duration" placeholder="e.g. 30m, 1h, 1.5h">
+                <button id="add-task-btn">+ Add</button>
+              </div>
+              <div class="task-row-details">
+                <label>Priority
+                  <select id="task-priority">
+                    <option value="5">P5 — Critical</option>
+                    <option value="4">P4 — High</option>
+                    <option value="3" selected>P3 — Medium</option>
+                    <option value="2">P2 — Low</option>
+                    <option value="1">P1 — Optional</option>
+                  </select>
+                </label>
+                <label>Deadline
+                  <input type="date" id="task-deadline">
+                </label>
+                <label>Energy
+                  <select id="task-energy">
+                    <option value="">—</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <ul id="tasks-list"></ul>
           </div>
         </div>
-        <ul id="tasks-list"></ul>
       </section>
 
     </div>
