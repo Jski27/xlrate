@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Behave like a careful senior engineer: make small changes, avoid unnecessary refactors, and prioritize correctness and testability.
+
 ## Commands
 
 ```bash
@@ -39,7 +41,20 @@ This is a no-build, no-framework browser app. ES modules are used natively throu
 - **Core engine must stay framework-agnostic**: no DOM, no `fetch`, no Node-specific APIs in `core/`.
 - **UI imports only `engine.js`** from core — never individual core modules.
 - **New scheduling logic** belongs in `core/scheduler.js` with a corresponding test in `tests/scheduler.test.js`.
-- **Deployment**: Netlify auto-deploys `main` with no build step; publish directory is `.` (repo root).
+- **Deployment**: Netlify auto-deploys `main` with no build step; publish directory is `.` (repo root). Do not introduce build systems.
+
+## UI guardrail
+
+Do not change UI layout or styling unless the issue explicitly requests it. Do not introduce CSS redesigns, layout changes, or new UI frameworks without explicit instruction.
+
+## Local storage rules
+
+If the structure of saved state changes:
+- Bump `SCHEMA_VERSION` in `state.js`
+- Ensure incompatible state clears safely
+- Explain the migration in the PR description
+
+Never silently break persisted data.
 
 ## Git workflow
 
@@ -50,7 +65,11 @@ This is a no-build, no-framework browser app. ES modules are used natively throu
 
 ## Versioning
 
-Semantic versioning: `vMAJOR.MINOR.PATCH`. Every merge that meaningfully changes behavior should increment the version.
+Semantic versioning: `vMAJOR.MINOR.PATCH`.
+
+- Bug fixes → PATCH
+- New features → MINOR
+- Breaking behavior changes → MAJOR
 
 Release process: merge PR → tag release → push tag → confirm Netlify deploy.
 
@@ -63,6 +82,20 @@ Release process: merge PR → tag release → push tag → confirm Netlify deplo
 
 If you detect feature creep, expanding scope, or unrequested enhancements, stop and ask for clarification.
 
+## Validation checklist (required before PR)
+
+Run:
+- `npm test` passes
+- `npm run dev` launches without errors
+- No console errors during use
+
+Manual smoke test:
+- Add a block → Edit a block → Delete a block
+- Add a task → Edit a task → Delete a task
+- Generate a schedule
+- Refresh page → state persists
+- Change date → schedule recalculates
+
 ## Data shapes
 
 All times are `"HH:MM"` strings at the boundaries; internally `core/` works in minutes since midnight.
@@ -72,4 +105,5 @@ All times are `"HH:MM"` strings at the boundaries; internally `core/` works in m
 | `priority` | 1–5 integer | 5 = highest urgency |
 | `energy` | `"high"` \| `"medium"` \| `"low"` | optional; defaults to medium in sort |
 | `deadline` | `"YYYY-MM-DD"` | optional; deadline-less tasks sort last |
-| `recurring` | `"none"` \| `"daily"` \| `"weekdays"` \| `"weekends"` \| `"mwf"` \| `"tth"` \| `"weekly"` | blocks only; `"weekly"` also stores `weeklyDay` (0–6) |
+| `recurring` | `"none"` \| `"daily"` \| `"weekdays"` \| `"weekends"` \| `"mwf"` \| `"tth"` \| `"weekly"` | blocks only |
+| `weeklyDay` | 0–6 | required when `recurring = "weekly"` |
