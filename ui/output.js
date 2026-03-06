@@ -5,11 +5,19 @@
 
 import { esc } from './utils.js';
 
-const PX_PER_MIN = 1.2; // 72px per hour
+const PX_PER_MIN = 1.6; // 96px per hour
+const MIN_HEIGHT = 36;  // px — minimum event height
+const EVENT_GAP  = 2;   // px — visual gap at top of each event
 
 function toMins(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
+}
+
+function eventSizeClass(height) {
+  if (height <= MIN_HEIGHT) return ' cal-event--compact';
+  if (height >= 80)         return ' cal-event--tall';
+  return '';
 }
 
 export function renderOutput({ schedule, spillover, meta }, blocks, config) {
@@ -36,11 +44,12 @@ export function renderOutput({ schedule, spillover, meta }, blocks, config) {
   for (const b of blocks) {
     const startMins = toMins(b.start);
     const endMins   = toMins(b.end);
-    const top    = Math.round((startMins - dayStart) * PX_PER_MIN);
-    const height = Math.max(Math.round((endMins - startMins) * PX_PER_MIN), 28);
-    const durMins = endMins - startMins;
+    const durMins   = endMins - startMins;
+    const top    = Math.round((startMins - dayStart) * PX_PER_MIN) + EVENT_GAP;
+    const height = Math.max(Math.round(durMins * PX_PER_MIN) - EVENT_GAP, MIN_HEIGHT);
+    const cls    = eventSizeClass(height);
     eventsHTML += `
-      <div class="cal-event cal-event--block" style="top:${top}px;height:${height}px" title="${esc(b.name)} · ${b.start}–${b.end}">
+      <div class="cal-event cal-event--block${cls}" style="top:${top}px;height:${height}px" title="${esc(b.name)} · ${b.start}–${b.end}">
         <span class="cal-event-name">${esc(b.name)}</span>
         <span class="cal-event-time">${b.start} – ${b.end} · ${durMins}m</span>
       </div>`;
@@ -50,10 +59,11 @@ export function renderOutput({ schedule, spillover, meta }, blocks, config) {
   for (const e of schedule) {
     const startMins = toMins(e.start);
     const endMins   = toMins(e.end);
-    const top    = Math.round((startMins - dayStart) * PX_PER_MIN);
-    const height = Math.max(Math.round((endMins - startMins) * PX_PER_MIN), 28);
+    const top    = Math.round((startMins - dayStart) * PX_PER_MIN) + EVENT_GAP;
+    const height = Math.max(Math.round((endMins - startMins) * PX_PER_MIN) - EVENT_GAP, MIN_HEIGHT);
+    const cls    = eventSizeClass(height);
     eventsHTML += `
-      <div class="cal-event cal-event--task" style="top:${top}px;height:${height}px" title="${esc(e.task)} · ${e.start}–${e.end}">
+      <div class="cal-event cal-event--task${cls}" style="top:${top}px;height:${height}px" title="${esc(e.task)} · ${e.start}–${e.end}">
         <span class="cal-event-name">${esc(e.task)}</span>
         <span class="cal-event-time">${e.start} – ${e.end} · ${e.durationMins}m</span>
       </div>`;
