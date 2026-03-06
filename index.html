@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>xlrate — Daily Planner</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -56,11 +57,14 @@
       <section class="card">
         <div class="panel-header">
           <h2>Non-Negotiable Blocks</h2>
-          <button class="btn-collapse" id="blocks-toggle" aria-label="Toggle blocks panel" aria-expanded="true">
-            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+          <div class="panel-header-actions">
+            <button class="btn-gcal" id="gcal-btn" title="Import events from Google Calendar">Import from Google Calendar</button>
+            <button class="btn-collapse" id="blocks-toggle" aria-label="Toggle blocks panel" aria-expanded="true">
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="panel-body" id="blocks-body">
           <div class="panel-body-inner">

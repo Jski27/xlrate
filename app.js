@@ -10,6 +10,7 @@ import { renderBlocks, renderTasks, addBlock, addTask, loadDemo,
          startEditBlock, startEditTask, getBlocksForDate } from './ui/forms.js';
 import { renderOutput } from './ui/output.js';
 import { today } from './ui/utils.js';
+import { importFromGcal } from './ui/gcal.js';
 
 // ── Generate ───────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,37 @@ document.getElementById('add-block-btn').addEventListener('click', addBlock);
 document.getElementById('add-task-btn').addEventListener('click', addTask);
 document.getElementById('generate-btn').addEventListener('click', generate);
 document.getElementById('demo-btn').addEventListener('click', loadDemo);
+
+document.getElementById('gcal-btn').addEventListener('click', async () => {
+  const dateStr = document.getElementById('plan-date').value || today();
+  const btn = document.getElementById('gcal-btn');
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+  try {
+    const imported = await importFromGcal(dateStr);
+    if (imported.length === 0) {
+      alert('No timed events found on your Google Calendar for this date.');
+      return;
+    }
+    // Deduplicate — skip blocks already present (same name + start)
+    const existing = new Set(state.blocks.map(b => b.name + b.start));
+    const newBlocks = imported.filter(b => !existing.has(b.name + b.start));
+    state.blocks.push(...newBlocks);
+    renderBlocks();
+    saveState();
+    if (newBlocks.length === 0) {
+      alert('All Google Calendar events for this date are already in your blocks list.');
+    } else {
+      btn.textContent = `✓ Imported ${newBlocks.length} event${newBlocks.length > 1 ? 's' : ''}`;
+      setTimeout(() => { btn.textContent = 'Import from Google Calendar'; }, 3000);
+    }
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    btn.disabled = false;
+    if (btn.textContent === 'Importing…') btn.textContent = 'Import from Google Calendar';
+  }
+});
 
 document.getElementById('block-name').addEventListener('keydown',    e => { if (e.key === 'Enter') addBlock(); });
 document.getElementById('task-name').addEventListener('keydown',     e => { if (e.key === 'Enter') addTask();  });
